@@ -1,4 +1,7 @@
 Dogs
 ====
+Dog game where you pee on buildings and protect your territory.
 
-Dog game.
+Vision
+====
+Hey Mark, what's the vision for this project?
