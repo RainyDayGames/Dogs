@@ -6,12 +6,14 @@ public var idleAnimation : AnimationClip;
 public var walkAnimation : AnimationClip;
 public var runAnimation : AnimationClip;
 public var jumpPoseAnimation : AnimationClip;
+public var markAnimation : AnimationClip;
 
 public var walkMaxAnimationSpeed : float = 0.75;
 public var trotMaxAnimationSpeed : float = 1.0;
 public var runMaxAnimationSpeed : float = 1.0;
 public var jumpAnimationSpeed : float = 1.15;
 public var landAnimationSpeed : float = 1.0;
+public var markAnimationSpeed : float = 1.0;
 
 private var _animation : Animation;
 
@@ -21,6 +23,7 @@ enum CharacterState {
 	Trotting = 2,
 	Running = 3,
 	Jumping = 4,
+	Marking = 5,
 }
 
 private var _characterState : CharacterState;
@@ -78,6 +81,10 @@ private var lastJumpButtonTime = -10.0;
 // Last time we performed a jump
 private var lastJumpTime = -1.0;
 
+// Last time the Mark button was clicked down
+private var lastMarkButtonTime = -10.0;
+private var markRepeatTime = 0.05;
+private var markAnimationTime = 2.0;
 
 // the height we jumped from (Used to determine for how long to apply extra jump power after jumping.)
 private var lastJumpStartHeight = 0.0;
@@ -119,6 +126,10 @@ public var jumpPoseAnimation : AnimationClip;
 	if(!jumpPoseAnimation && canJump) {
 		_animation = null;
 		Debug.Log("No jump animation found and the character has canJump enabled. Turning off animations.");
+	}
+	if(!markAnimation) {
+		_animation = null;
+		Debug.Log("No mark animation found. Turning off animations.");
 	}
 			
 }
@@ -190,7 +201,12 @@ function UpdateSmoothedMovementDirection ()
 		_characterState = CharacterState.Idle;
 		
 		// Pick speed modifier
-		if (Input.GetKey (KeyCode.LeftShift) || Input.GetKey (KeyCode.RightShift))
+		if (Time.time - lastMarkButtonTime < markAnimationTime)
+		{
+			targetSpeed = 0;
+			_characterState = CharacterState.Marking;
+		}
+		else if (Input.GetKey (KeyCode.LeftShift) || Input.GetKey (KeyCode.RightShift))
 		{
 			targetSpeed *= runSpeed;
 			_characterState = CharacterState.Running;
@@ -298,6 +314,11 @@ function Update() {
 	{
 		lastJumpButtonTime = Time.time;
 	}
+	
+	if (Input.GetButtonDown ("Fire1"))
+	{
+		lastMarkButtonTime = Time.time;
+	}
 
 	UpdateSmoothedMovementDirection();
 	
@@ -319,7 +340,11 @@ function Update() {
 	
 	// ANIMATION sector
 	if(_animation) {
-		if(_characterState == CharacterState.Jumping) 
+		if(_characterState == CharacterState.Marking) {
+			_animation[markAnimation.name].speed = Mathf.Clamp(controller.velocity.magnitude, 0.0, markAnimationSpeed);
+			_animation.CrossFade(markAnimation.name);	
+		}
+		else if(_characterState == CharacterState.Jumping) 
 		{
 			if(!jumpingReachedApex) {
 				_animation[jumpPoseAnimation.name].speed = jumpAnimationSpeed;
@@ -349,8 +374,7 @@ function Update() {
 				else if(_characterState == CharacterState.Walking) {
 					_animation[walkAnimation.name].speed = Mathf.Clamp(controller.velocity.magnitude, 0.0, walkMaxAnimationSpeed);
 					_animation.CrossFade(walkAnimation.name);	
-				}
-				
+				}				
 			}
 		}
 	}
