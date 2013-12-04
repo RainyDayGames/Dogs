@@ -85,6 +85,7 @@ private var lastJumpTime = -1.0;
 private var lastMarkButtonTime = -10.0;
 private var markRepeatTime = 0.05;
 private var markAnimationTime = 2.0;
+private var marking = false;
 
 // the height we jumped from (Used to determine for how long to apply extra jump power after jumping.)
 private var lastJumpStartHeight = 0.0;
@@ -201,7 +202,7 @@ function UpdateSmoothedMovementDirection ()
 		_characterState = CharacterState.Idle;
 		
 		// Pick speed modifier
-		if (Time.time - lastMarkButtonTime < markAnimationTime)
+		if (IsMarking())
 		{
 			targetSpeed = 0;
 			_characterState = CharacterState.Marking;
@@ -284,6 +285,15 @@ function ApplyGravity ()
 	}
 }
 
+function ApplyMarking()
+{
+	marking = (Time.time - lastMarkButtonTime < markAnimationTime);
+	
+	if(marking) {
+		SendMessage("Marking", SendMessageOptions.DontRequireReceiver);
+	}
+}
+
 function CalculateJumpVerticalSpeed (targetJumpHeight : float)
 {
 	// From the jump height and gravity we deduce the upwards speed 
@@ -329,6 +339,9 @@ function Update() {
 
 	// Apply jumping logic
 	ApplyJumping ();
+	
+	// Apply Marking logic
+	ApplyMarking();
 	
 	// Calculate actual motion
 	var movement = moveDirection * moveSpeed + Vector3 (0, verticalSpeed, 0) + inAirVelocity;
@@ -429,6 +442,9 @@ function IsGrounded () {
 	return (collisionFlags & CollisionFlags.CollidedBelow) != 0;
 }
 
+function IsMarking () {
+	return marking;
+}
 function GetDirection () {
 	return moveDirection;
 }
