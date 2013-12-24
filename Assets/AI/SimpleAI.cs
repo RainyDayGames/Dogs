@@ -3,6 +3,8 @@ using System.Collections;
 
 public class SimpleAI : MonoBehaviour {
 
+	public GameObject target;
+
 	// Use this for initialization
 	void Start () {
 	
@@ -10,8 +12,7 @@ public class SimpleAI : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		
-		Vector3 p1 = GameObject.Find("Player").transform.position;
+		Vector3 p1 = target.transform.position;
 		Vector3 p2 = this.transform.position;
 		
 		float a, b, distance;
@@ -20,8 +21,8 @@ public class SimpleAI : MonoBehaviour {
 		distance = Mathf.Sqrt((a * a) + (b * b));
 		
 		if(distance < 4 && distance > 1) {
-			float px = GameObject.Find("Player").transform.position.x;
-			float pz = GameObject.Find("Player").transform.position.z;
+			float px = target.transform.position.x;
+			float pz = target.transform.position.z;
 			
 			float newX, newZ;
 			
